@@ -5,49 +5,57 @@
   <title>Music Reviews</title>
   <style>
     body { font-family: Arial, sans-serif; margin: 20px; }
+    .controls { margin-bottom: 20px; }
+    .controls select, .controls input { padding: 8px; font-size: 16px; margin-right: 10px; }
     .tabs { margin-bottom: 20px; }
     .tab-button { padding: 10px 20px; cursor: pointer; border: 1px solid #ccc; margin-right: 5px; background: #f9f9f9; }
     .tab-button.active { background: #ddd; font-weight: bold; }
-    .search-container { margin-bottom: 20px; }
     .review-card { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
     .review-header { display: flex; justify-content: space-between; align-items: center; }
     .review-title { font-size: 18px; }
     .review-rating { font-size: 18px; font-weight: bold; }
     .review-rating.gunner { color: blue; }
     .review-rating.brady { color: green; }
-    .dropdown-content { display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
     .dropdown-toggle { cursor: pointer; color: #007BFF; margin-top: 5px; }
-    .album-cover { max-width: 100px; display: block; margin-bottom: 10px; }
+    .dropdown-content { display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
+    .album-cover, .spotify-embed { max-width: 100px; display: block; margin-bottom: 10px; }
   </style>
 </head>
 <body>
   <h1>Music Reviews</h1>
+  
+  <div class="controls">
+    <select id="review-type">
+      <option value="songs">Song Reviews</option>
+      <option value="albums">Album Reviews</option>
+      <option value="artists">Artist Reviews</option>
+    </select>
+    <input type="text" id="search-input" placeholder="Search by artist..." />
+  </div>
+  
   <div class="tabs">
     <button class="tab-button active" data-reviewer="gunner">Gunner</button>
     <button class="tab-button" data-reviewer="brady">Brady</button>
   </div>
-  <div class="search-container">
-    <input type="text" id="search-input" placeholder="Search by artist..." />
-  </div>
+  
   <div id="reviews-container"></div>
 
   <script>
     let reviewsData = {};
     let currentReviewer = 'gunner';
+    let currentReviewType = 'songs'; // songs, albums, or artists
 
-    // Fetch reviews.json from your repo
-    fetch('reviews.json')
-      .then(response => response.json())
-      .then(data => {
-        reviewsData = data;
-        renderReviews();
-      })
-      .catch(err => {
-        console.error('Error loading reviews:', err);
-        document.getElementById('reviews-container').innerHTML = '<p>Error loading reviews.</p>';
-      });
+    const reviewTypeSelect = document.getElementById('review-type');
+    const searchInput = document.getElementById('search-input');
+    const reviewsContainer = document.getElementById('reviews-container');
 
-    // Tab switching logic
+    // When review type is changed, load the corresponding JSON file.
+    reviewTypeSelect.addEventListener('change', () => {
+      currentReviewType = reviewTypeSelect.value;
+      loadReviews();
+    });
+
+    // Reviewer tabs switching
     document.querySelectorAll('.tab-button').forEach(button => {
       button.addEventListener('click', () => {
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
@@ -57,86 +65,179 @@
       });
     });
 
-    // Search filtering by artist
-    document.getElementById('search-input').addEventListener('input', renderReviews);
+    // Search filtering (by artist)
+    searchInput.addEventListener('input', renderReviews);
 
+    // Load the appropriate JSON file from the repo.
+    function loadReviews() {
+      reviewsContainer.innerHTML = '<p>Loading reviews...</p>';
+      let fileName = '';
+      if (currentReviewType === 'songs') fileName = 'songs.json';
+      else if (currentReviewType === 'albums') fileName = 'albums.json';
+      else if (currentReviewType === 'artists') fileName = 'artists.json';
+
+      fetch(fileName)
+        .then(response => response.json())
+        .then(data => {
+          reviewsData = data;
+          renderReviews();
+        })
+        .catch(err => {
+          console.error('Error loading reviews:', err);
+          reviewsContainer.innerHTML = '<p>Error loading reviews.</p>';
+        });
+    }
+
+    // Fetch Spotify oEmbed details (if a spotifyLink is provided).
+    function fetchSpotifyDetails(spotifyLink, callback) {
+      fetch('https://open.spotify.com/oembed?url=' + encodeURIComponent(spotifyLink))
+        .then(res => res.json())
+        .then(data => callback(null, data))
+        .catch(err => callback(err, null));
+    }
+
+    // Render reviews based on current type and reviewer.
     function renderReviews() {
-      const container = document.getElementById('reviews-container');
-      container.innerHTML = '';
+      reviewsContainer.innerHTML = '';
       if (!reviewsData[currentReviewer]) return;
-      const searchQuery = document.getElementById('search-input').value.toLowerCase();
-      reviewsData[currentReviewer].forEach((review, index) => {
-        if (review.artist.toLowerCase().includes(searchQuery)) {
-          const card = document.createElement('div');
-          card.className = 'review-card';
+      const searchQuery = searchInput.value.toLowerCase();
+      
+      reviewsData[currentReviewer].forEach(review => {
+        // Filter by artist name if provided
+        if (review.artist && !review.artist.toLowerCase().includes(searchQuery)) return;
+        
+        const card = document.createElement('div');
+        card.className = 'review-card';
+        
+        // Build the header based on review type.
+        const header = document.createElement('div');
+        header.className = 'review-header';
+        const title = document.createElement('div');
+        title.className = 'review-title';
+        let ratingValue = '';
+        
+        if (currentReviewType === 'songs') {
+          title.textContent = `${review.song} – ${review.artist}`;
+          ratingValue = review.songRating + '/100';
+        } else if (currentReviewType === 'albums') {
+          title.textContent = `${review.album} – ${review.artist}`;
+          ratingValue = review.albumRating + '/100';
+        } else if (currentReviewType === 'artists') {
+          title.textContent = review.artist;
+          ratingValue = review.artistRating + '/100';
+        }
+        
+        const rating = document.createElement('div');
+        rating.className = `review-rating ${currentReviewer}`;
+        rating.textContent = ratingValue;
+        
+        header.appendChild(title);
+        header.appendChild(rating);
+        card.appendChild(header);
 
-          // Header: Song and artist with rating on the right
-          const header = document.createElement('div');
-          header.className = 'review-header';
+        // Dropdown toggle
+        const dropdownToggle = document.createElement('div');
+        dropdownToggle.className = 'dropdown-toggle';
+        dropdownToggle.textContent = 'Show Details ▼';
+        card.appendChild(dropdownToggle);
 
-          const title = document.createElement('div');
-          title.className = 'review-title';
-          title.textContent = `${review.song} - ${review.artist}`;
+        // Dropdown content container
+        const dropdownContent = document.createElement('div');
+        dropdownContent.className = 'dropdown-content';
 
-          const rating = document.createElement('div');
-          rating.className = `review-rating ${currentReviewer}`;
-          rating.textContent = `${review.songRating}/100`;
+        // If a Spotify link is provided, fetch details.
+        if (review.spotifyLink) {
+          const spotifyContainer = document.createElement('div');
+          spotifyContainer.textContent = 'Loading Spotify details...';
+          dropdownContent.appendChild(spotifyContainer);
 
-          header.appendChild(title);
-          header.appendChild(rating);
-          card.appendChild(header);
+          fetchSpotifyDetails(review.spotifyLink, (err, data) => {
+            if (!err && data) {
+              // Clear placeholder and add embed HTML (if available) and thumbnail.
+              spotifyContainer.innerHTML = '';
+              if (data.thumbnail_url) {
+                const img = document.createElement('img');
+                img.src = data.thumbnail_url;
+                img.alt = data.title;
+                img.className = 'album-cover';
+                spotifyContainer.appendChild(img);
+              }
+              if (data.title) {
+                const detailTitle = document.createElement('p');
+                detailTitle.innerHTML = `<strong>${data.author_name || ''}</strong>: ${data.title}`;
+                spotifyContainer.appendChild(detailTitle);
+              }
+              // Optionally include the embed code (data.html) if you want an embedded player.
+              if (data.html) {
+                const embedDiv = document.createElement('div');
+                embedDiv.className = 'spotify-embed';
+                embedDiv.innerHTML = data.html;
+                spotifyContainer.appendChild(embedDiv);
+              }
+            } else {
+              spotifyContainer.textContent = 'Could not load Spotify details.';
+            }
+          });
+        }
 
-          // Dropdown toggle button
-          const dropdownToggle = document.createElement('div');
-          dropdownToggle.className = 'dropdown-toggle';
-          dropdownToggle.textContent = 'Show Details ▼';
-          card.appendChild(dropdownToggle);
-
-          // Dropdown content (album cover, album info, additional ratings, comments)
-          const dropdownContent = document.createElement('div');
-          dropdownContent.className = 'dropdown-content';
-          
-          if (review.albumCover) {
-            const img = document.createElement('img');
-            img.src = review.albumCover;
-            img.alt = review.album + ' cover';
-            img.className = 'album-cover';
-            dropdownContent.appendChild(img);
-          }
-
+        // Append manual details (if any) from the JSON.
+        // For songs: album, albumRating, artistRating, comments.
+        if (currentReviewType === 'songs') {
           const albumInfo = document.createElement('p');
-          albumInfo.innerHTML = `<strong>Album:</strong> ${review.album}`;
+          albumInfo.innerHTML = `<strong>Album:</strong> ${review.album || 'N/A'}`;
           dropdownContent.appendChild(albumInfo);
 
           const albumRating = document.createElement('p');
-          albumRating.innerHTML = `<strong>Album Rating:</strong> ${review.albumRating}/100`;
+          albumRating.innerHTML = `<strong>Album Rating:</strong> ${review.albumRating || 'N/A'}/100`;
           dropdownContent.appendChild(albumRating);
 
           const artistRating = document.createElement('p');
-          artistRating.innerHTML = `<strong>Artist Rating:</strong> ${review.artistRating}/100`;
+          artistRating.innerHTML = `<strong>Artist Rating:</strong> ${review.artistRating || 'N/A'}/100`;
           dropdownContent.appendChild(artistRating);
+        }
+        // For albums: albumRating, artistRating, comments.
+        else if (currentReviewType === 'albums') {
+          const albumRating = document.createElement('p');
+          albumRating.innerHTML = `<strong>Album Rating:</strong> ${review.albumRating || 'N/A'}/100`;
+          dropdownContent.appendChild(albumRating);
 
+          const artistRating = document.createElement('p');
+          artistRating.innerHTML = `<strong>Artist Rating:</strong> ${review.artistRating || 'N/A'}/100`;
+          dropdownContent.appendChild(artistRating);
+        }
+        // For artists: just artistRating and comments.
+        else if (currentReviewType === 'artists') {
+          const artistRating = document.createElement('p');
+          artistRating.innerHTML = `<strong>Artist Rating:</strong> ${review.artistRating || 'N/A'}/100`;
+          dropdownContent.appendChild(artistRating);
+        }
+        
+        // Comments (common to all types)
+        if (review.comments) {
           const comments = document.createElement('p');
           comments.innerHTML = `<strong>Comments:</strong> ${review.comments}`;
           dropdownContent.appendChild(comments);
-
-          card.appendChild(dropdownContent);
-
-          // Toggle dropdown display
-          dropdownToggle.addEventListener('click', () => {
-            if (dropdownContent.style.display === 'none' || dropdownContent.style.display === '') {
-              dropdownContent.style.display = 'block';
-              dropdownToggle.textContent = 'Hide Details ▲';
-            } else {
-              dropdownContent.style.display = 'none';
-              dropdownToggle.textContent = 'Show Details ▼';
-            }
-          });
-
-          container.appendChild(card);
         }
+        
+        card.appendChild(dropdownContent);
+
+        // Toggle dropdown display
+        dropdownToggle.addEventListener('click', () => {
+          if (dropdownContent.style.display === 'none' || dropdownContent.style.display === '') {
+            dropdownContent.style.display = 'block';
+            dropdownToggle.textContent = 'Hide Details ▲';
+          } else {
+            dropdownContent.style.display = 'none';
+            dropdownToggle.textContent = 'Show Details ▼';
+          }
+        });
+
+        reviewsContainer.appendChild(card);
       });
     }
+
+    // Load default reviews on page load.
+    loadReviews();
   </script>
 </body>
 </html>
