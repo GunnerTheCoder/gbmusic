@@ -1,5 +1,12 @@
 {
-  "gunner": [],
+  "gunner": [
+        {
+            "spotifyLink": "https://open.spotify.com/artist/2YZyLoL8N0Wb9xBt1NhZWg?si=sbsMZ--5ThaLPPri7FfPhw",
+            "comments": "99% Of Kendrick songs are good, 1% suck.",
+            "artist": "Kendrick Lamar",
+            "artistRating": 97
+        }
+    ],
   "brady": [
     {
       "spotifyLink": "https://open.spotify.com/artist/ZZZ",
