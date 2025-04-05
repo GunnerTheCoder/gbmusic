@@ -1,0 +1,106 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Admin - Build Reviews JSON</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    form { margin-bottom: 20px; }
+    label { display: block; margin-top: 10px; }
+    input, textarea, select { width: 100%; padding: 8px; margin-top: 5px; }
+    button { margin-top: 10px; padding: 10px 20px; }
+    .review-list { margin-top: 20px; }
+    .review-item { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Admin: Build Reviews JSON</h1>
+  <form id="review-form">
+    <label for="reviewer">Reviewer:</label>
+    <select id="reviewer" required>
+      <option value="gunner">Gunner</option>
+      <option value="brady">Brady</option>
+    </select>
+
+    <label for="song">Song Name:</label>
+    <input type="text" id="song" required />
+
+    <label for="artist">Artist:</label>
+    <input type="text" id="artist" required />
+
+    <label for="album">Album:</label>
+    <input type="text" id="album" required />
+
+    <label for="albumCover">Album Cover URL:</label>
+    <input type="url" id="albumCover" />
+
+    <label for="songRating">Song Rating (out of 100):</label>
+    <input type="number" id="songRating" min="0" max="100" required />
+
+    <label for="artistRating">Artist Rating (out of 100):</label>
+    <input type="number" id="artistRating" min="0" max="100" required />
+
+    <label for="albumRating">Album Rating (out of 100):</label>
+    <input type="number" id="albumRating" min="0" max="100" required />
+
+    <label for="comments">Comments:</label>
+    <textarea id="comments" rows="3"></textarea>
+
+    <button type="submit">Add Review</button>
+  </form>
+
+  <h2>Current Reviews</h2>
+  <div id="review-list" class="review-list"></div>
+
+  <button id="export-json">Export JSON</button>
+  <textarea id="json-output" rows="10" style="width:100%; margin-top:10px;"></textarea>
+
+  <script>
+    // In-memory reviews storage
+    let reviews = { gunner: [], brady: [] };
+
+    const reviewForm = document.getElementById('review-form');
+    const reviewList = document.getElementById('review-list');
+    const jsonOutput = document.getElementById('json-output');
+
+    reviewForm.addEventListener('submit', function(e) {
+      e.preventDefault();
+      const reviewer = document.getElementById('reviewer').value;
+      const song = document.getElementById('song').value;
+      const artist = document.getElementById('artist').value;
+      const album = document.getElementById('album').value;
+      const albumCover = document.getElementById('albumCover').value;
+      const songRating = document.getElementById('songRating').value;
+      const artistRating = document.getElementById('artistRating').value;
+      const albumRating = document.getElementById('albumRating').value;
+      const comments = document.getElementById('comments').value;
+
+      const review = {
+        song,
+        artist,
+        album,
+        albumCover,
+        songRating: parseInt(songRating),
+        artistRating: parseInt(artistRating),
+        albumRating: parseInt(albumRating),
+        comments
+      };
+
+      reviews[reviewer].push(review);
+      addReviewToList(reviewer, review);
+      reviewForm.reset();
+    });
+
+    function addReviewToList(reviewer, review) {
+      const item = document.createElement('div');
+      item.className = 'review-item';
+      item.textContent = `${review.song} - ${review.artist} (${reviewer})`;
+      reviewList.appendChild(item);
+    }
+
+    document.getElementById('export-json').addEventListener('click', () => {
+      jsonOutput.value = JSON.stringify(reviews, null, 4);
+    });
+  </script>
+</body>
+</html>
