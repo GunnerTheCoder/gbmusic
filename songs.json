@@ -1,14 +1,22 @@
 {
   "gunner": [
-    {
-      "spotifyLink": "https://open.spotify.com/track/7Bpx2vsWfQFBACRz4h3IqH?si=3309e2704d644486",
-      "comments": "",
-      "song": "Family Ties",
-      "artist": "Baby Keem",
-      "album": "The Melodic Blue",
-      "songRating": 96
-    }
-  ],
+        {
+            "spotifyLink": "https://open.spotify.com/track/2n9fC0A4ptmWqYeMXEVaok?si=991aa198c4f44cda",
+            "comments": "Yes.",
+            "song": "GOOD CREDIT",
+            "artist": "Playboi Carti",
+            "album": "MUSIC",
+            "songRating": 100
+        },
+        {
+            "spotifyLink": "https://open.spotify.com/track/3j3SfV4hAcR4XjCvW393Gr?si=f09533618a7047b2",
+            "comments": "Who made this.....",
+            "song": "POP OUT",
+            "artist": "Playboi Carti",
+            "album": "MUSIC",
+            "songRating": 0
+        }
+    ],
   "brady": [
     {
       "spotifyLink": "",
