@@ -34,14 +34,17 @@
       background: #ddd;
       font-weight: bold;
     }
-    /* Review Card (Pill style) */
+    /* Container for each review with dropdown */
+    .review-container {
+      margin-bottom: 15px;
+    }
+    /* Pill style for the visible review card */
     .review-card {
       display: flex;
       align-items: center;
       border: 1px solid #ccc;
       border-radius: 30px;
-      padding: 10px 20px;
-      margin-bottom: 10px;
+      padding: 10px 15px;
       background-color: #f9f9f9;
     }
     .review-cover {
@@ -69,24 +72,37 @@
       margin: 0;
       padding: 0;
     }
-    .review-rating {
-      font-size: 18px;
-      font-weight: bold;
+    /* Container for the speedometer gauge */
+    .review-speedometer {
+      width: 50px;
+      height: 50px;
       margin-left: 10px;
     }
-    .review-rating.gunner {
-      color: blue;
+    /* Dropdown toggle button */
+    .dropdown-toggle {
+      cursor: pointer;
+      padding: 5px;
+      font-size: 18px;
+      margin-left: 10px;
     }
-    .review-rating.brady {
-      color: green;
+    /* Hidden dropdown content (expanded on toggle) */
+    .dropdown-content {
+      display: none;
+      border: 1px solid #ccc;
+      border-top: none;
+      border-radius: 0 0 10px 10px;
+      padding: 10px 15px;
+      background-color: #fff;
     }
-    /* Comments row */
-    .review-comments {
-      margin: 0;
-      margin-top: 5px;
-      font-size: 14px;
-      color: #333;
-      padding: 10px 20px;
+    .dropdown-content.active {
+      display: block;
+    }
+    /* Optional styling for embedded content */
+    .spotify-embed {
+      margin-bottom: 10px;
+    }
+    .detail-label {
+      font-weight: bold;
     }
   </style>
 </head>
@@ -118,7 +134,7 @@
     const searchInput = document.getElementById('search-input');
     const reviewsContainer = document.getElementById('reviews-container');
 
-    // Switch JSON file when review type changes
+    // Change JSON file when review type changes
     reviewTypeSelect.addEventListener('change', () => {
       currentReviewType = reviewTypeSelect.value;
       loadReviews();
@@ -134,10 +150,10 @@
       });
     });
 
-    // Search by artist
+    // Filter by artist name in search
     searchInput.addEventListener('input', renderReviews);
 
-    // Load the JSON for the current type
+    // Load JSON file based on review type
     function loadReviews() {
       reviewsContainer.innerHTML = '<p>Loading reviews...</p>';
       let fileName = '';
@@ -157,7 +173,7 @@
         });
     }
 
-    // Minimal Spotify fetch: just to get a thumbnail (and maybe a title)
+    // Fetch Spotify oEmbed details for thumbnail and embed HTML
     function fetchSpotifyDetails(spotifyLink, callback) {
       fetch('https://open.spotify.com/oembed?url=' + encodeURIComponent(spotifyLink))
         .then(res => res.json())
@@ -165,34 +181,75 @@
         .catch(err => callback(err, null));
     }
 
-    // Render reviews
+    // Create a speedometer gauge as an SVG element
+    function createSpeedometer(rating, reviewer) {
+      const svgNS = "http://www.w3.org/2000/svg";
+      const svg = document.createElementNS(svgNS, "svg");
+      svg.setAttribute("width", "50");
+      svg.setAttribute("height", "50");
+      svg.setAttribute("viewBox", "0 0 36 36");
+
+      // Background circle
+      const bgCircle = document.createElementNS(svgNS, "path");
+      bgCircle.setAttribute("d", "M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831");
+      bgCircle.setAttribute("fill", "none");
+      bgCircle.setAttribute("stroke", "#eee");
+      bgCircle.setAttribute("stroke-width", "2");
+      svg.appendChild(bgCircle);
+
+      // Foreground progress circle
+      const progressCircle = document.createElementNS(svgNS, "path");
+      progressCircle.setAttribute("d", "M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831");
+      progressCircle.setAttribute("fill", "none");
+      const strokeColor = (reviewer === 'gunner') ? 'blue' : 'green';
+      progressCircle.setAttribute("stroke", strokeColor);
+      progressCircle.setAttribute("stroke-width", "2");
+      // The circle's circumference is ~100 so we use rating directly.
+      progressCircle.setAttribute("stroke-dasharray", `${rating}, 100`);
+      // Rotate so progress starts at top.
+      progressCircle.setAttribute("transform", "rotate(-90 18 18)");
+      svg.appendChild(progressCircle);
+
+      // Center text for rating
+      const textEl = document.createElementNS(svgNS, "text");
+      textEl.setAttribute("x", "18");
+      textEl.setAttribute("y", "22");
+      textEl.setAttribute("text-anchor", "middle");
+      textEl.setAttribute("font-size", "8");
+      textEl.textContent = rating;
+      svg.appendChild(textEl);
+
+      return svg;
+    }
+
+    // Render all reviews for the current reviewer and review type
     function renderReviews() {
       reviewsContainer.innerHTML = '';
       if (!reviewsData[currentReviewer]) return;
 
       const searchQuery = searchInput.value.toLowerCase();
 
-      // Go through each review
       reviewsData[currentReviewer].forEach(review => {
-        // Filter out reviews that don't match the search by artist
-        if (review.artist && !review.artist.toLowerCase().includes(searchQuery)) {
-          return;
-        }
+        // Filter by artist name if search is active
+        if (review.artist && !review.artist.toLowerCase().includes(searchQuery)) return;
 
-        // Safety check: only display reviews that actually belong to the chosen type
+        // Safety checks based on review type
         if (currentReviewType === 'songs' && !review.song) return;
         if (currentReviewType === 'albums' && !review.album) return;
         if (currentReviewType === 'artists' && !review.artistRating) return;
 
-        // Create the "pill" container
+        // Create container that holds both the pill and the dropdown content.
+        const container = document.createElement('div');
+        container.className = 'review-container';
+
+        // Create the pill (review card)
         const card = document.createElement('div');
         card.className = 'review-card';
 
-        // If there's a Spotify link, fetch a thumbnail. Otherwise, skip or use a placeholder.
-        let coverImg = document.createElement('img');
+        // Cover image element: use Spotify thumbnail if available; fallback placeholder.
+        const coverImg = document.createElement('img');
         coverImg.className = 'review-cover';
-        coverImg.src = 'https://via.placeholder.com/40'; // fallback placeholder
-
+        coverImg.src = 'https://via.placeholder.com/40';
         if (review.spotifyLink) {
           fetchSpotifyDetails(review.spotifyLink, (err, data) => {
             if (!err && data && data.thumbnail_url) {
@@ -202,27 +259,23 @@
         }
         card.appendChild(coverImg);
 
-        // Middle info
+        // Review info (title and, if applicable, artist)
         const info = document.createElement('div');
         info.className = 'review-info';
-
-        // Title + Artist (depending on type)
         let titleText = '';
         if (currentReviewType === 'songs') {
           titleText = review.song || '';
         } else if (currentReviewType === 'albums') {
           titleText = review.album || '';
         } else if (currentReviewType === 'artists') {
-          // For artist reviews, we’ll just use the name as “title”
           titleText = review.artist || '';
         }
-
         const titleEl = document.createElement('p');
         titleEl.className = 'review-title';
         titleEl.textContent = titleText;
         info.appendChild(titleEl);
 
-        // For songs or albums, we can show the artist below the title
+        // For songs and albums, show the artist name below the title.
         if (currentReviewType === 'songs' || currentReviewType === 'albums') {
           const artistEl = document.createElement('p');
           artistEl.className = 'review-artist';
@@ -231,29 +284,63 @@
         }
         card.appendChild(info);
 
-        // Rating on the right
-        const rating = document.createElement('div');
-        rating.className = `review-rating ${currentReviewer}`;
-
+        // Create the speedometer gauge for the rating.
+        let ratingValue = 0;
         if (currentReviewType === 'songs') {
-          rating.textContent = (review.songRating || 0) + '/100';
+          ratingValue = review.songRating || 0;
         } else if (currentReviewType === 'albums') {
-          rating.textContent = (review.albumRating || 0) + '/100';
+          ratingValue = review.albumRating || 0;
         } else if (currentReviewType === 'artists') {
-          rating.textContent = (review.artistRating || 0) + '/100';
+          ratingValue = review.artistRating || 0;
+        }
+        const gaugeContainer = document.createElement('div');
+        gaugeContainer.className = 'review-speedometer';
+        gaugeContainer.appendChild(createSpeedometer(ratingValue, currentReviewer));
+        card.appendChild(gaugeContainer);
+
+        // Dropdown toggle button
+        const toggleBtn = document.createElement('div');
+        toggleBtn.className = 'dropdown-toggle';
+        toggleBtn.textContent = '▼';
+        card.appendChild(toggleBtn);
+
+        container.appendChild(card);
+
+        // Create dropdown content container for extra details.
+        const dropdown = document.createElement('div');
+        dropdown.className = 'dropdown-content';
+        
+        // If there is a Spotify link, show the embed.
+        if (review.spotifyLink) {
+          const spotifyContainer = document.createElement('div');
+          spotifyContainer.className = 'spotify-embed';
+          spotifyContainer.textContent = 'Loading Spotify embed...';
+          fetchSpotifyDetails(review.spotifyLink, (err, data) => {
+            if (!err && data && data.html) {
+              spotifyContainer.innerHTML = data.html;
+            } else {
+              spotifyContainer.textContent = 'Spotify embed not available.';
+            }
+          });
+          dropdown.appendChild(spotifyContainer);
         }
 
-        card.appendChild(rating);
-
-        reviewsContainer.appendChild(card);
-
-        // If there are comments, show them below in a smaller text row
+        // Show comments if available.
         if (review.comments) {
-          const commentsEl = document.createElement('p');
-          commentsEl.className = 'review-comments';
-          commentsEl.textContent = 'Comments: ' + review.comments;
-          reviewsContainer.appendChild(commentsEl);
+          const commentsEl = document.createElement('div');
+          commentsEl.innerHTML = `<span class="detail-label">Comments:</span> ${review.comments}`;
+          dropdown.appendChild(commentsEl);
         }
+
+        container.appendChild(dropdown);
+
+        // Toggle dropdown display on button click.
+        toggleBtn.addEventListener('click', () => {
+          dropdown.classList.toggle('active');
+          toggleBtn.textContent = dropdown.classList.contains('active') ? '▲' : '▼';
+        });
+
+        reviewsContainer.appendChild(container);
       });
     }
 
