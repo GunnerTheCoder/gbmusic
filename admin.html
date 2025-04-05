@@ -11,37 +11,63 @@
     button { margin-top: 10px; padding: 10px 20px; }
     .review-list { margin-top: 20px; }
     .review-item { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; }
+    .hidden { display: none; }
   </style>
 </head>
 <body>
   <h1>Admin: Build Reviews JSON</h1>
   <form id="review-form">
+    <label for="review-type">Review Type:</label>
+    <select id="review-type" required>
+      <option value="song">Song</option>
+      <option value="album">Album</option>
+      <option value="artist">Artist</option>
+    </select>
+    
     <label for="reviewer">Reviewer:</label>
     <select id="reviewer" required>
       <option value="gunner">Gunner</option>
       <option value="brady">Brady</option>
     </select>
 
-    <label for="song">Song Name:</label>
-    <input type="text" id="song" required />
+    <!-- Common field: Spotify Link -->
+    <label for="spotifyLink">Spotify Link (optional):</label>
+    <input type="url" id="spotifyLink" placeholder="https://open.spotify.com/..." />
 
-    <label for="artist">Artist:</label>
-    <input type="text" id="artist" required />
+    <!-- Song-specific fields -->
+    <div class="song-field">
+      <label for="song">Song Name:</label>
+      <input type="text" id="song" />
+    </div>
 
-    <label for="album">Album:</label>
-    <input type="text" id="album" required />
+    <!-- For song and album, we need Artist and Title info -->
+    <div class="song-album-field">
+      <label for="artist">Artist:</label>
+      <input type="text" id="artist" />
+    </div>
 
-    <label for="albumCover">Album Cover URL:</label>
-    <input type="url" id="albumCover" />
+    <!-- Album-specific field (for song reviews and album reviews) -->
+    <div class="song-field album-field">
+      <label for="album">Album:</label>
+      <input type="text" id="album" />
+    </div>
 
-    <label for="songRating">Song Rating (out of 100):</label>
-    <input type="number" id="songRating" min="0" max="100" required />
-
-    <label for="artistRating">Artist Rating (out of 100):</label>
-    <input type="number" id="artistRating" min="0" max="100" required />
-
-    <label for="albumRating">Album Rating (out of 100):</label>
-    <input type="number" id="albumRating" min="0" max="100" required />
+    <!-- Rating fields -->
+    <div class="song-field">
+      <label for="songRating">Song Rating (0-100):</label>
+      <input type="number" id="songRating" min="0" max="100" />
+    </div>
+    <div class="song-album-field">
+      <label for="albumRating">Album Rating (0-100):</label>
+      <input type="number" id="albumRating" min="0" max="100" />
+    </div>
+    <div class="song-album-artist-field">
+      <label for="artistRating">Artist Rating (0-100):</label>
+      <input type="number" id="artistRating" min="0" max="100" />
+    </div>
+    <div class="artist-field">
+      <!-- For artist reviews, only artistRating is required (already in song-album-artist-field) -->
+    </div>
 
     <label for="comments">Comments:</label>
     <textarea id="comments" rows="3"></textarea>
@@ -52,54 +78,134 @@
   <h2>Current Reviews</h2>
   <div id="review-list" class="review-list"></div>
 
-  <button id="export-json">Export JSON</button>
-  <textarea id="json-output" rows="10" style="width:100%; margin-top:10px;"></textarea>
+  <h2>Export JSON</h2>
+  <div>
+    <button id="export-song">Export Song Reviews JSON</button>
+    <textarea id="json-song" rows="10" style="width:100%; margin-top:10px;"></textarea>
+  </div>
+  <div>
+    <button id="export-album">Export Album Reviews JSON</button>
+    <textarea id="json-album" rows="10" style="width:100%; margin-top:10px;"></textarea>
+  </div>
+  <div>
+    <button id="export-artist">Export Artist Reviews JSON</button>
+    <textarea id="json-artist" rows="10" style="width:100%; margin-top:10px;"></textarea>
+  </div>
 
   <script>
-    // In-memory reviews storage
-    let reviews = { gunner: [], brady: [] };
+    // Separate in-memory storage for each review type.
+    const reviews = {
+      song: { gunner: [], brady: [] },
+      album: { gunner: [], brady: [] },
+      artist: { gunner: [], brady: [] }
+    };
 
     const reviewForm = document.getElementById('review-form');
     const reviewList = document.getElementById('review-list');
-    const jsonOutput = document.getElementById('json-output');
 
+    const reviewTypeSelect = document.getElementById('review-type');
+    // Fields that will be shown/hidden based on review type:
+    const songFields = document.querySelectorAll('.song-field');
+    const albumFields = document.querySelectorAll('.album-field');
+    const songAlbumFields = document.querySelectorAll('.song-album-field');
+    const songAlbumArtistFields = document.querySelectorAll('.song-album-artist-field');
+    const artistFields = document.querySelectorAll('.artist-field');
+
+    // Adjust visible fields based on selected review type.
+    function adjustFormFields() {
+      const type = reviewTypeSelect.value;
+      // Hide all fields initially.
+      songFields.forEach(el => el.classList.add('hidden'));
+      albumFields.forEach(el => el.classList.add('hidden'));
+      songAlbumFields.forEach(el => el.classList.add('hidden'));
+      songAlbumArtistFields.forEach(el => el.classList.add('hidden'));
+      artistFields.forEach(el => el.classList.add('hidden'));
+
+      // For a song review, show song fields + artist fields + album fields + ratings.
+      if (type === 'song') {
+        songFields.forEach(el => el.classList.remove('hidden'));
+        songAlbumFields.forEach(el => el.classList.remove('hidden'));
+        songAlbumArtistFields.forEach(el => el.classList.remove('hidden'));
+      }
+      // For an album review, hide the song name but show album and artist fields.
+      else if (type === 'album') {
+        albumFields.forEach(el => el.classList.remove('hidden'));
+        songAlbumFields.forEach(el => el.classList.remove('hidden'));
+        songAlbumArtistFields.forEach(el => el.classList.remove('hidden'));
+      }
+      // For an artist review, only show artist field and artist rating.
+      else if (type === 'artist') {
+        artistFields.forEach(el => el.classList.remove('hidden'));
+        songAlbumArtistFields.forEach(el => el.classList.remove('hidden'));
+      }
+    }
+
+    reviewTypeSelect.addEventListener('change', adjustFormFields);
+    adjustFormFields();
+
+    // Add review to storage and list
     reviewForm.addEventListener('submit', function(e) {
       e.preventDefault();
+      const type = reviewTypeSelect.value;
       const reviewer = document.getElementById('reviewer').value;
+      const spotifyLink = document.getElementById('spotifyLink').value;
       const song = document.getElementById('song').value;
       const artist = document.getElementById('artist').value;
       const album = document.getElementById('album').value;
-      const albumCover = document.getElementById('albumCover').value;
       const songRating = document.getElementById('songRating').value;
-      const artistRating = document.getElementById('artistRating').value;
       const albumRating = document.getElementById('albumRating').value;
+      const artistRating = document.getElementById('artistRating').value;
       const comments = document.getElementById('comments').value;
 
-      const review = {
-        song,
-        artist,
-        album,
-        albumCover,
-        songRating: parseInt(songRating),
-        artistRating: parseInt(artistRating),
-        albumRating: parseInt(albumRating),
-        comments
-      };
+      let review = { spotifyLink, comments };
 
-      reviews[reviewer].push(review);
-      addReviewToList(reviewer, review);
+      if (type === 'song') {
+        review.song = song;
+        review.artist = artist;
+        review.album = album;
+        review.songRating = songRating ? parseInt(songRating) : null;
+        review.albumRating = albumRating ? parseInt(albumRating) : null;
+        review.artistRating = artistRating ? parseInt(artistRating) : null;
+      } else if (type === 'album') {
+        review.album = album;
+        review.artist = artist;
+        review.albumRating = albumRating ? parseInt(albumRating) : null;
+        review.artistRating = artistRating ? parseInt(artistRating) : null;
+      } else if (type === 'artist') {
+        review.artist = artist;
+        review.artistRating = artistRating ? parseInt(artistRating) : null;
+      }
+
+      reviews[type][reviewer].push(review);
+      addReviewToList(type, reviewer, review);
       reviewForm.reset();
+      adjustFormFields();
     });
 
-    function addReviewToList(reviewer, review) {
+    function addReviewToList(type, reviewer, review) {
       const item = document.createElement('div');
       item.className = 'review-item';
-      item.textContent = `${review.song} - ${review.artist} (${reviewer})`;
+      let displayText = '';
+      if (type === 'song') {
+        displayText = `${review.song} – ${review.artist} (${review.album}) [Song Review: ${review.songRating}/100] (${reviewer})`;
+      } else if (type === 'album') {
+        displayText = `${review.album} – ${review.artist} [Album Review: ${review.albumRating}/100] (${reviewer})`;
+      } else if (type === 'artist') {
+        displayText = `${review.artist} [Artist Review: ${review.artistRating}/100] (${reviewer})`;
+      }
+      item.textContent = displayText;
       reviewList.appendChild(item);
     }
 
-    document.getElementById('export-json').addEventListener('click', () => {
-      jsonOutput.value = JSON.stringify(reviews, null, 4);
+    // Export buttons: output the JSON for each type.
+    document.getElementById('export-song').addEventListener('click', () => {
+      document.getElementById('json-song').value = JSON.stringify(reviews.song, null, 4);
+    });
+    document.getElementById('export-album').addEventListener('click', () => {
+      document.getElementById('json-album').value = JSON.stringify(reviews.album, null, 4);
+    });
+    document.getElementById('export-artist').addEventListener('click', () => {
+      document.getElementById('json-artist').value = JSON.stringify(reviews.artist, null, 4);
     });
   </script>
 </body>
