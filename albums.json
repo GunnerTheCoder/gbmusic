@@ -1,0 +1,13 @@
+{
+  "gunner": [
+    {
+      "spotifyLink": "https://open.spotify.com/album/YYY",
+      "album": "Album Title",
+      "artist": "Artist Name",
+      "albumRating": 88,
+      "artistRating": 90,
+      "comments": "A cohesive album with a strong theme."
+    }
+  ],
+  "brady": []
+}
