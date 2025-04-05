@@ -1,0 +1,22 @@
+{
+  "gunner": [
+    {
+      "spotifyLink": "https://open.spotify.com/track/XXX",
+      "song": "Song Title",
+      "artist": "Artist Name",
+      "album": "Album Name",
+      "songRating": 85,
+      "comments": "Great track with amazing vocals."
+    }
+  ],
+  "brady": [
+    {
+      "spotifyLink": "",
+      "song": "Another Song",
+      "artist": "Different Artist",
+      "album": "Album Name",
+      "songRating": 78,
+      "comments": "Brady’s detailed thoughts."
+    }
+  ]
+}
