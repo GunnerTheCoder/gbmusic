@@ -1,13 +1,69 @@
 {
   "gunner": [
-    {
-      "spotifyLink": "https://open.spotify.com/album/YYY",
-      "album": "Album Title",
-      "artist": "Artist Name",
-      "albumRating": 88,
-      "artistRating": 90,
-      "comments": "A cohesive album with a strong theme."
-    }
-  ],
+        {
+            "spotifyLink": "https://open.spotify.com/album/0fSfkmx0tdPqFYkJuNX74a?si=j2dGxhPeSwGtLtkHXdMkAA",
+            "comments": "Features carried. I AM MUSIC lacked creativity. -10 points for DJ Swamp Izzo. Next time don't put your mic in your microwave for instrumentals.",
+            "album": "MUSIC",
+            "artist": "Playboi Carti",
+            "albumRating": 65,
+            "artistRating": null
+        },
+        {
+            "spotifyLink": "https://open.spotify.com/album/4eLPsYPBmXABThSJ821sqY?si=80512f3e388f40c2",
+            "comments": "Peak storytelling. Want a better perspective? Watch this: https://youtu.be/v-ek1OxZ2tE?si=CNX3Dy82vH7g4VHz",
+            "album": "DAMN.",
+            "artist": "Kendrick Lamar",
+            "albumRating": 95,
+            "artistRating": null
+        },
+        {
+            "spotifyLink": "https://open.spotify.com/album/6PBZN8cbwkqm1ERj2BGXJ1?si=0cc1e65582eb4653",
+            "comments": "Masterpiece. Some songs had too much repeating lines.",
+            "album": "good kid, m.A.A.d city",
+            "artist": "Kendrick Lamar",
+            "albumRating": 98,
+            "artistRating": null
+        },
+        {
+            "spotifyLink": "https://open.spotify.com/album/7ycBtnsMtyVbbwTfJwRjSP?si=eb91a8658a6a4930",
+            "comments": "The best hip-pop album of all time.",
+            "album": "To Pimp A Butterfly",
+            "artist": "Kendrick Lamar",
+            "albumRating": 100,
+            "artistRating": null
+        },
+        {
+            "spotifyLink": "https://open.spotify.com/album/1bkN9nIkkCnXeG4yitVS1J?si=433ec67a8468447a",
+            "comments": "Overall Kendrick's best starter album. Some songs lacked creativity and some had horrible features, *cough cough* \"No Make-Up\"",
+            "album": "Section.80",
+            "artist": "Kendrick Lamar",
+            "albumRating": 83,
+            "artistRating": null
+        },
+        {
+            "spotifyLink": "https://open.spotify.com/album/79ONNoS4M9tfIA1mYLBYVX?si=b68c5e46bfb548aa",
+            "comments": "Very experimental piece. Brings out tears every playthrough.",
+            "album": "Mr. Morale & the Big Steppers",
+            "artist": "Kendrick Lamar",
+            "albumRating": 90,
+            "artistRating": null
+        },
+        {
+            "spotifyLink": "https://open.spotify.com/album/0hvT3yIEysuuvkK73vgdcW?si=c46931eb84214dc4",
+            "comments": "Tell em Kendrick did it.",
+            "album": "GNX",
+            "artist": "Kendrick Lamar",
+            "albumRating": 87,
+            "artistRating": null
+        },
+        {
+            "spotifyLink": "https://open.spotify.com/album/7MoLQ8vckhwBbQqEYQTYQC?si=13HzAd1VQe-vlL9vfwzXQQ",
+            "comments": "Kendrick's Worst Piece. Feels, empty.",
+            "album": "Overly Dedicated",
+            "artist": "Kendrick Lamar",
+            "albumRating": 80,
+            "artistRating": null
+        }
+    ],
   "brady": []
 }
