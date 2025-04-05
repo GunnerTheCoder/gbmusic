@@ -181,21 +181,12 @@
         }
 
         // Append manual details (if any) from the JSON.
-        // For songs: album, albumRating, artistRating, comments.
         if (currentReviewType === 'songs') {
+          // For songs, only show the album (no albumRating or artistRating)
           const albumInfo = document.createElement('p');
           albumInfo.innerHTML = `<strong>Album:</strong> ${review.album || 'N/A'}`;
           dropdownContent.appendChild(albumInfo);
-
-          const albumRating = document.createElement('p');
-          albumRating.innerHTML = `<strong>Album Rating:</strong> ${review.albumRating || 'N/A'}/100`;
-          dropdownContent.appendChild(albumRating);
-
-          const artistRating = document.createElement('p');
-          artistRating.innerHTML = `<strong>Artist Rating:</strong> ${review.artistRating || 'N/A'}/100`;
-          dropdownContent.appendChild(artistRating);
         }
-        // For albums: albumRating, artistRating, comments.
         else if (currentReviewType === 'albums') {
           const albumRating = document.createElement('p');
           albumRating.innerHTML = `<strong>Album Rating:</strong> ${review.albumRating || 'N/A'}/100`;
@@ -205,7 +196,6 @@
           artistRating.innerHTML = `<strong>Artist Rating:</strong> ${review.artistRating || 'N/A'}/100`;
           dropdownContent.appendChild(artistRating);
         }
-        // For artists: just artistRating and comments.
         else if (currentReviewType === 'artists') {
           const artistRating = document.createElement('p');
           artistRating.innerHTML = `<strong>Artist Rating:</strong> ${review.artistRating || 'N/A'}/100`;
