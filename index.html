@@ -1,0 +1,142 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <title>Music Reviews</title>
+  <style>
+    body { font-family: Arial, sans-serif; margin: 20px; }
+    .tabs { margin-bottom: 20px; }
+    .tab-button { padding: 10px 20px; cursor: pointer; border: 1px solid #ccc; margin-right: 5px; background: #f9f9f9; }
+    .tab-button.active { background: #ddd; font-weight: bold; }
+    .search-container { margin-bottom: 20px; }
+    .review-card { border: 1px solid #ccc; padding: 10px; margin-bottom: 10px; border-radius: 5px; }
+    .review-header { display: flex; justify-content: space-between; align-items: center; }
+    .review-title { font-size: 18px; }
+    .review-rating { font-size: 18px; font-weight: bold; }
+    .review-rating.gunner { color: blue; }
+    .review-rating.brady { color: green; }
+    .dropdown-content { display: none; margin-top: 10px; border-top: 1px solid #ccc; padding-top: 10px; }
+    .dropdown-toggle { cursor: pointer; color: #007BFF; margin-top: 5px; }
+    .album-cover { max-width: 100px; display: block; margin-bottom: 10px; }
+  </style>
+</head>
+<body>
+  <h1>Music Reviews</h1>
+  <div class="tabs">
+    <button class="tab-button active" data-reviewer="gunner">Gunner</button>
+    <button class="tab-button" data-reviewer="brady">Brady</button>
+  </div>
+  <div class="search-container">
+    <input type="text" id="search-input" placeholder="Search by artist..." />
+  </div>
+  <div id="reviews-container"></div>
+
+  <script>
+    let reviewsData = {};
+    let currentReviewer = 'gunner';
+
+    // Fetch reviews.json from your repo
+    fetch('reviews.json')
+      .then(response => response.json())
+      .then(data => {
+        reviewsData = data;
+        renderReviews();
+      })
+      .catch(err => {
+        console.error('Error loading reviews:', err);
+        document.getElementById('reviews-container').innerHTML = '<p>Error loading reviews.</p>';
+      });
+
+    // Tab switching logic
+    document.querySelectorAll('.tab-button').forEach(button => {
+      button.addEventListener('click', () => {
+        document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
+        button.classList.add('active');
+        currentReviewer = button.getAttribute('data-reviewer');
+        renderReviews();
+      });
+    });
+
+    // Search filtering by artist
+    document.getElementById('search-input').addEventListener('input', renderReviews);
+
+    function renderReviews() {
+      const container = document.getElementById('reviews-container');
+      container.innerHTML = '';
+      if (!reviewsData[currentReviewer]) return;
+      const searchQuery = document.getElementById('search-input').value.toLowerCase();
+      reviewsData[currentReviewer].forEach((review, index) => {
+        if (review.artist.toLowerCase().includes(searchQuery)) {
+          const card = document.createElement('div');
+          card.className = 'review-card';
+
+          // Header: Song and artist with rating on the right
+          const header = document.createElement('div');
+          header.className = 'review-header';
+
+          const title = document.createElement('div');
+          title.className = 'review-title';
+          title.textContent = `${review.song} - ${review.artist}`;
+
+          const rating = document.createElement('div');
+          rating.className = `review-rating ${currentReviewer}`;
+          rating.textContent = `${review.songRating}/100`;
+
+          header.appendChild(title);
+          header.appendChild(rating);
+          card.appendChild(header);
+
+          // Dropdown toggle button
+          const dropdownToggle = document.createElement('div');
+          dropdownToggle.className = 'dropdown-toggle';
+          dropdownToggle.textContent = 'Show Details ▼';
+          card.appendChild(dropdownToggle);
+
+          // Dropdown content (album cover, album info, additional ratings, comments)
+          const dropdownContent = document.createElement('div');
+          dropdownContent.className = 'dropdown-content';
+          
+          if (review.albumCover) {
+            const img = document.createElement('img');
+            img.src = review.albumCover;
+            img.alt = review.album + ' cover';
+            img.className = 'album-cover';
+            dropdownContent.appendChild(img);
+          }
+
+          const albumInfo = document.createElement('p');
+          albumInfo.innerHTML = `<strong>Album:</strong> ${review.album}`;
+          dropdownContent.appendChild(albumInfo);
+
+          const albumRating = document.createElement('p');
+          albumRating.innerHTML = `<strong>Album Rating:</strong> ${review.albumRating}/100`;
+          dropdownContent.appendChild(albumRating);
+
+          const artistRating = document.createElement('p');
+          artistRating.innerHTML = `<strong>Artist Rating:</strong> ${review.artistRating}/100`;
+          dropdownContent.appendChild(artistRating);
+
+          const comments = document.createElement('p');
+          comments.innerHTML = `<strong>Comments:</strong> ${review.comments}`;
+          dropdownContent.appendChild(comments);
+
+          card.appendChild(dropdownContent);
+
+          // Toggle dropdown display
+          dropdownToggle.addEventListener('click', () => {
+            if (dropdownContent.style.display === 'none' || dropdownContent.style.display === '') {
+              dropdownContent.style.display = 'block';
+              dropdownToggle.textContent = 'Hide Details ▲';
+            } else {
+              dropdownContent.style.display = 'none';
+              dropdownToggle.textContent = 'Show Details ▼';
+            }
+          });
+
+          container.appendChild(card);
+        }
+      });
+    }
+  </script>
+</body>
+</html>
