@@ -1,30 +1,21 @@
 {
-  "gunner": [
+  "gunner": [],
+  "brady":  [
         {
-            "spotifyLink": "https://open.spotify.com/track/2n9fC0A4ptmWqYeMXEVaok?si=991aa198c4f44cda",
-            "comments": "Yes.",
-            "song": "GOOD CREDIT",
-            "artist": "Playboi Carti",
-            "album": "MUSIC",
+            "spotifyLink": "https://open.spotify.com/album/6c3KEWO4IGcHfPAekbiarD",
+            "comments": "Love This Song!",
+            "song": "DRIVING THROUGH MY HOMETOWN",
+            "artist": "Chase Matthew",
+            "album": "CHASE",
             "songRating": 100
         },
         {
-            "spotifyLink": "https://open.spotify.com/track/3j3SfV4hAcR4XjCvW393Gr?si=f09533618a7047b2",
-            "comments": "Who made this.....",
-            "song": "POP OUT",
-            "artist": "Playboi Carti",
-            "album": "MUSIC",
-            "songRating": 0
+            "spotifyLink": "https://open.spotify.com/track/06CYe9F4IaMmSTAswOHQDD",
+            "comments": "It is so sad but so good.",
+            "song": "Leave Me Too",
+            "artist": "Josh Ross",
+            "album": "Leave Me Too",
+            "songRating": 98
         }
-    ],
-  "brady": [
-    {
-      "spotifyLink": "",
-      "song": "Another Song",
-      "artist": "Different Artist",
-      "album": "Album Name",
-      "songRating": 78,
-      "comments": "Brady’s detailed thoughts."
-    }
-  ]
+    ]
 }
