@@ -3,22 +3,29 @@
 <head>
   <meta charset="UTF-8">
   <title>Music Reviews</title>
+  <!-- Using Roboto for a modern look -->
+  <link href="https://fonts.googleapis.com/css?family=Roboto:400,500,700&display=swap" rel="stylesheet">
   <style>
     body {
-      font-family: Arial, sans-serif;
+      font-family: 'Roboto', sans-serif;
       margin: 20px;
+      background-color: #f4f6f8;
+      color: #333;
     }
     h1 {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
     .controls {
       margin-bottom: 20px;
     }
     .controls select,
     .controls input {
-      padding: 8px;
+      padding: 10px;
       font-size: 16px;
       margin-right: 10px;
+      border: 1px solid #ccc;
+      border-radius: 4px;
+      background: #fff;
     }
     .tabs {
       margin-bottom: 20px;
@@ -26,33 +33,42 @@
     .tab-button {
       padding: 10px 20px;
       cursor: pointer;
-      border: 1px solid #ccc;
+      border: none;
       margin-right: 5px;
-      background: #f9f9f9;
+      background: #e0e0e0;
+      border-radius: 4px;
+      transition: background 0.2s;
     }
-    .tab-button.active {
-      background: #ddd;
-      font-weight: bold;
+    .tab-button.active,
+    .tab-button:hover {
+      background: #90caf9;
+      color: #fff;
     }
-    /* Container for each review with dropdown */
+    /* Container for each review including dropdown */
     .review-container {
-      margin-bottom: 15px;
+      margin-bottom: 20px;
     }
-    /* Pill style for the visible review card */
+    /* Pill style review card */
     .review-card {
       display: flex;
       align-items: center;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       border-radius: 30px;
-      padding: 10px 15px;
-      background-color: #f9f9f9;
+      padding: 15px 20px;
+      background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+      transition: transform 0.2s;
+    }
+    .review-card:hover {
+      transform: translateY(-2px);
     }
     .review-cover {
-      width: 40px;
-      height: 40px;
+      width: 60px;
+      height: 60px;
       border-radius: 50%;
       object-fit: cover;
-      margin-right: 10px;
+      margin-right: 15px;
+      border: 1px solid #ccc;
     }
     .review-info {
       flex: 1;
@@ -61,48 +77,51 @@
       justify-content: center;
     }
     .review-title {
-      font-weight: bold;
-      font-size: 16px;
+      font-weight: 500;
+      font-size: 18px;
       margin: 0;
       padding: 0;
     }
     .review-artist {
-      font-size: 14px;
-      color: #666;
-      margin: 0;
+      font-size: 16px;
+      color: #777;
+      margin: 2px 0 0;
       padding: 0;
     }
-    /* Container for the speedometer gauge */
+    /* Speedometer gauge container */
     .review-speedometer {
-      width: 50px;
-      height: 50px;
-      margin-left: 10px;
+      width: 60px;
+      height: 60px;
+      margin-left: 15px;
     }
     /* Dropdown toggle button */
     .dropdown-toggle {
       cursor: pointer;
       padding: 5px;
-      font-size: 18px;
-      margin-left: 10px;
+      font-size: 20px;
+      margin-left: 15px;
+      user-select: none;
     }
-    /* Hidden dropdown content (expanded on toggle) */
+    /* Dropdown content (hidden until toggled) */
     .dropdown-content {
       display: none;
-      border: 1px solid #ccc;
+      border: 1px solid #ddd;
       border-top: none;
       border-radius: 0 0 10px 10px;
-      padding: 10px 15px;
+      padding: 15px 20px;
       background-color: #fff;
+      box-shadow: 0 2px 4px rgba(0,0,0,0.08);
     }
     .dropdown-content.active {
       display: block;
     }
-    /* Optional styling for embedded content */
+    /* Styling for the Spotify embed */
     .spotify-embed {
-      margin-bottom: 10px;
+      margin-bottom: 15px;
     }
     .detail-label {
-      font-weight: bold;
+      font-weight: 500;
+      margin-right: 5px;
     }
   </style>
 </head>
@@ -134,13 +153,13 @@
     const searchInput = document.getElementById('search-input');
     const reviewsContainer = document.getElementById('reviews-container');
 
-    // Change JSON file when review type changes
+    // Update JSON file based on selected review type.
     reviewTypeSelect.addEventListener('change', () => {
       currentReviewType = reviewTypeSelect.value;
       loadReviews();
     });
 
-    // Switch reviewer tab
+    // Switch reviewer tab.
     document.querySelectorAll('.tab-button').forEach(button => {
       button.addEventListener('click', () => {
         document.querySelectorAll('.tab-button').forEach(btn => btn.classList.remove('active'));
@@ -150,10 +169,10 @@
       });
     });
 
-    // Filter by artist name in search
+    // Filter reviews by artist based on search input.
     searchInput.addEventListener('input', renderReviews);
 
-    // Load JSON file based on review type
+    // Load the corresponding JSON file.
     function loadReviews() {
       reviewsContainer.innerHTML = '<p>Loading reviews...</p>';
       let fileName = '';
@@ -173,7 +192,7 @@
         });
     }
 
-    // Fetch Spotify oEmbed details for thumbnail and embed HTML
+    // Fetch Spotify oEmbed details (thumbnail, embed HTML, etc.)
     function fetchSpotifyDetails(spotifyLink, callback) {
       fetch('https://open.spotify.com/oembed?url=' + encodeURIComponent(spotifyLink))
         .then(res => res.json())
@@ -181,15 +200,15 @@
         .catch(err => callback(err, null));
     }
 
-    // Create a speedometer gauge as an SVG element
+    // Create an SVG speedometer gauge.
     function createSpeedometer(rating, reviewer) {
       const svgNS = "http://www.w3.org/2000/svg";
       const svg = document.createElementNS(svgNS, "svg");
-      svg.setAttribute("width", "50");
-      svg.setAttribute("height", "50");
+      svg.setAttribute("width", "60");
+      svg.setAttribute("height", "60");
       svg.setAttribute("viewBox", "0 0 36 36");
 
-      // Background circle
+      // Background circle.
       const bgCircle = document.createElementNS(svgNS, "path");
       bgCircle.setAttribute("d", "M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831");
       bgCircle.setAttribute("fill", "none");
@@ -197,20 +216,18 @@
       bgCircle.setAttribute("stroke-width", "2");
       svg.appendChild(bgCircle);
 
-      // Foreground progress circle
+      // Foreground progress arc.
       const progressCircle = document.createElementNS(svgNS, "path");
       progressCircle.setAttribute("d", "M18 2.0845 a 15.9155 15.9155 0 0 1 0 31.831 a 15.9155 15.9155 0 0 1 0 -31.831");
       progressCircle.setAttribute("fill", "none");
       const strokeColor = (reviewer === 'gunner') ? 'blue' : 'green';
       progressCircle.setAttribute("stroke", strokeColor);
       progressCircle.setAttribute("stroke-width", "2");
-      // The circle's circumference is ~100 so we use rating directly.
       progressCircle.setAttribute("stroke-dasharray", `${rating}, 100`);
-      // Rotate so progress starts at top.
       progressCircle.setAttribute("transform", "rotate(-90 18 18)");
       svg.appendChild(progressCircle);
 
-      // Center text for rating
+      // Center text for rating.
       const textEl = document.createElementNS(svgNS, "text");
       textEl.setAttribute("x", "18");
       textEl.setAttribute("y", "22");
@@ -222,7 +239,7 @@
       return svg;
     }
 
-    // Render all reviews for the current reviewer and review type
+    // Render reviews based on the current type and reviewer.
     function renderReviews() {
       reviewsContainer.innerHTML = '';
       if (!reviewsData[currentReviewer]) return;
@@ -230,26 +247,29 @@
       const searchQuery = searchInput.value.toLowerCase();
 
       reviewsData[currentReviewer].forEach(review => {
-        // Filter by artist name if search is active
+        // Filter by artist if search is active.
         if (review.artist && !review.artist.toLowerCase().includes(searchQuery)) return;
 
-        // Safety checks based on review type
+        // Ensure the review has the required fields for the current type.
         if (currentReviewType === 'songs' && !review.song) return;
         if (currentReviewType === 'albums' && !review.album) return;
-        if (currentReviewType === 'artists' && !review.artistRating) return;
+        if (currentReviewType === 'artists' && !review.artist) return;
 
-        // Create container that holds both the pill and the dropdown content.
+        // Create the main container.
         const container = document.createElement('div');
         container.className = 'review-container';
 
-        // Create the pill (review card)
+        // Create the pill (review card).
         const card = document.createElement('div');
         card.className = 'review-card';
 
-        // Cover image element: use Spotify thumbnail if available; fallback placeholder.
+        // Cover image: uses Spotify thumbnail (or profile image for artists) if available.
         const coverImg = document.createElement('img');
         coverImg.className = 'review-cover';
-        coverImg.src = 'https://via.placeholder.com/40';
+        // Default placeholder image.
+        coverImg.src = (currentReviewType === 'artists') ?
+          'https://via.placeholder.com/60?text=Artist' :
+          'https://via.placeholder.com/60';
         if (review.spotifyLink) {
           fetchSpotifyDetails(review.spotifyLink, (err, data) => {
             if (!err && data && data.thumbnail_url) {
@@ -259,7 +279,7 @@
         }
         card.appendChild(coverImg);
 
-        // Review info (title and, if applicable, artist)
+        // Info container for title (and artist name if applicable).
         const info = document.createElement('div');
         info.className = 'review-info';
         let titleText = '';
@@ -275,7 +295,6 @@
         titleEl.textContent = titleText;
         info.appendChild(titleEl);
 
-        // For songs and albums, show the artist name below the title.
         if (currentReviewType === 'songs' || currentReviewType === 'albums') {
           const artistEl = document.createElement('p');
           artistEl.className = 'review-artist';
@@ -284,7 +303,7 @@
         }
         card.appendChild(info);
 
-        // Create the speedometer gauge for the rating.
+        // Speedometer gauge for rating.
         let ratingValue = 0;
         if (currentReviewType === 'songs') {
           ratingValue = review.songRating || 0;
@@ -298,7 +317,7 @@
         gaugeContainer.appendChild(createSpeedometer(ratingValue, currentReviewer));
         card.appendChild(gaugeContainer);
 
-        // Dropdown toggle button
+        // Dropdown toggle button.
         const toggleBtn = document.createElement('div');
         toggleBtn.className = 'dropdown-toggle';
         toggleBtn.textContent = '▼';
@@ -306,11 +325,10 @@
 
         container.appendChild(card);
 
-        // Create dropdown content container for extra details.
+        // Dropdown content container (for Spotify embed and comments).
         const dropdown = document.createElement('div');
         dropdown.className = 'dropdown-content';
-        
-        // If there is a Spotify link, show the embed.
+
         if (review.spotifyLink) {
           const spotifyContainer = document.createElement('div');
           spotifyContainer.className = 'spotify-embed';
@@ -325,7 +343,6 @@
           dropdown.appendChild(spotifyContainer);
         }
 
-        // Show comments if available.
         if (review.comments) {
           const commentsEl = document.createElement('div');
           commentsEl.innerHTML = `<span class="detail-label">Comments:</span> ${review.comments}`;
@@ -334,7 +351,7 @@
 
         container.appendChild(dropdown);
 
-        // Toggle dropdown display on button click.
+        // Toggle dropdown display.
         toggleBtn.addEventListener('click', () => {
           dropdown.classList.toggle('active');
           toggleBtn.textContent = dropdown.classList.contains('active') ? '▲' : '▼';
@@ -344,7 +361,7 @@
       });
     }
 
-    // Initial load
+    // Initial load.
     loadReviews();
   </script>
 </body>
